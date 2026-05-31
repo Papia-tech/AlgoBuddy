@@ -576,7 +576,6 @@ onChange={handleSearchChange}
 onFocus={() => setShowHistory(true)}
 onBlur={() => setTimeout(() => setShowHistory(false), 200)}
 placeholder="Search algorithms... (Press / or Ctrl+K)"
-              placeholder="Search algorithms and topics..."
               className="w-full h-[52px] pl-12 pr-4 rounded-2xl border border-[#e5e7eb] dark:border-[#333] bg-white dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-white placeholder-[#9ca3af] text-[15px] shadow-sm focus:outline-none focus:border-[#a435f0] focus:ring-2 focus:ring-[#a435f0]/20 transition-all"
             />
             {search && (
