@@ -179,9 +179,7 @@ GENERAL FORMATTING RULES
 - Be warm, encouraging, and make learning feel fun!`;
 
 // ─── Groq Client ──────────────────────────────────────────────────────────────
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+
 
 const MODEL = "llama-3.3-70b-versatile"; // Free tier, fast & capable
 const MAX_TOKENS = 2048;
@@ -207,6 +205,9 @@ function validateMessages(messages) {
 
 // ─── POST Handler ─────────────────────────────────────────────────────────────
 export async function POST(request) {
+  const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY,
+  });
   let body;
   try {
     body = await request.json();
