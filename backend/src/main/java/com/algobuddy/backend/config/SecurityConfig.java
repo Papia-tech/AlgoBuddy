@@ -14,11 +14,61 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+
+    @Value("${app.allowed-origins:}")
+    private String allowedOrigins;
+
+    @Value("${app.environment:dev}")
+    private String environment;
+
+    List<String> resolveAllowedOrigins() {
+        List<String> list = new ArrayList<>();
+        if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
+            for (String origin : allowedOrigins.split(",")) {
+                origin = origin.trim();
+                if (!origin.isEmpty()) {
+                    if (origin.equals("*")) {
+                        log.warn("CORS configuration contains wildcard '*', which is not allowed. Skipping.");
+                        continue;
+                    }
+                    if (origin.endsWith("/")) {
+                        origin = origin.substring(0, origin.length() - 1);
+                    }
+                    if (origin.startsWith("http://") || origin.startsWith("https://")) {
+                        list.add(origin);
+                    } else {
+                        log.warn("Invalid CORS origin format: '{}'. Origins must start with http:// or https://. Skipping.", origin);
+                    }
+                }
+            }
+        }
+
+        if (list.isEmpty()) {
+            boolean isProd = environment != null && (environment.toLowerCase().contains("prod") || environment.toLowerCase().contains("production"));
+            if (isProd) {
+                log.error("No valid CORS allowed origins configured for production environment. All cross-origin requests will be blocked.");
+            } else {
+                log.info("No valid CORS allowed origins configured for development/test environment. Defaulting to 'http://localhost:3000'.");
+                list.add("http://localhost:3000");
+            }
+        } else {
+            log.info("CORS allowed origins configured: {}", list);
+        }
+        return list;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -51,8 +101,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow any frontend origin (Vercel, localhost, network IPs)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        List<String> resolvedOrigins = resolveAllowedOrigins();
+        if (resolvedOrigins.isEmpty()) {
+            configuration.setAllowedOrigins(Collections.emptyList());
+        } else {
+            configuration.setAllowedOrigins(resolvedOrigins);
+        }
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token"));

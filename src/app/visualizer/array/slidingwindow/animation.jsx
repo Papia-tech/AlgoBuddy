@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { gsap } from "gsap";
 import ResetButton from "@/app/components/ui/resetButton";
 import GoButton from "@/app/components/ui/goButton";
@@ -89,39 +89,19 @@ const Animation = () => {
     });
   }, [engine]);
 
-  // Fix: Move useVisualizerReset here after handleReset is defined
+  // Animate the element background and border colors whenever visualState changes
   useEffect(() => {
-    // Call any reset initialization logic here if needed
-  }, []);
-
-  const animateStep = useCallback(() => {
-    if (currentStateIdxRef.current >= stateQueueRef.current.length) {
-      setIsAnimating(false);
-      setMessage("Visualization completed.");
-      setMessageType("success");
-      setShowQuiz(true);
-      return;
-    }
-
-    const state = stateQueueRef.current[currentStateIdxRef.current];
-    const delay = 1500 / 1; // Replace speedRef.current with actual speed value
-
-  const link = document.createElement("a");
-  link.download = "sliding-window-visualization.png";
-  link.href = canvas.toDataURL("image/png");
-  link.click();
-};
-
     elementRefs.current.forEach((ref, index) => {
       if (!ref) return;
-      const [start, end] = state.activeWindow;
+      const activeWindow = visualState.activeWindow || [-1, -1];
+      const [start, end] = activeWindow;
       
       if (index >= start && index <= end) {
-        if (state.violation && index === state.left) {
+        if (visualState.violation && index === visualState.left) {
           gsap.to(ref, { backgroundColor: "#FEE2E2", borderColor: "#EF4444", color: "#991B1B", duration: 0.2 });
-        } else if (state.success) {
+        } else if (visualState.success) {
           gsap.to(ref, { backgroundColor: "#DCFCE7", borderColor: "#22C55E", color: "#166534", duration: 0.2 });
-        } else if (state.done) {
+        } else if (visualState.done) {
           gsap.to(ref, { backgroundColor: "#F3E8FF", borderColor: "#A855F7", color: "#6B21A8", duration: 0.2 });
         } else {
           gsap.to(ref, { backgroundColor: "#F3E8FF", borderColor: "#A855F7", color: "#6B21A8", duration: 0.2 });
@@ -131,12 +111,12 @@ const Animation = () => {
       }
     });
 
-    if (state.done) {
+    if (visualState.done) {
       setMessage("Visualization completed.");
       setMessageType("success");
       setShowQuiz(true);
     }
-  }, []);
+  }, [visualState]);
 
   const handleGo = (e) => {
     e.preventDefault();

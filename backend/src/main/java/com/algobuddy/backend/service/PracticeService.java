@@ -47,7 +47,7 @@ public class PracticeService {
                 ));
 
         UserPracticeStats stats = statsRepository.findById(userId)
-                .orElse(new UserPracticeStats(userId, 0, 0, null, 0));
+                .orElse(new UserPracticeStats(userId, 0, 0, null, 0, null));
 
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime startOfDay = now.toLocalDate().atStartOfDay(now.getOffset()).toOffsetDateTime();
@@ -169,7 +169,7 @@ public class PracticeService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateStreak(UUID userId) {
         UserPracticeStats stats = statsRepository.findById(userId)
-                .orElse(new UserPracticeStats(userId, 0, 0, null, 0));
+                .orElse(new UserPracticeStats(userId, 0, 0, null, 0, null));
 
         LocalDate today = LocalDate.now();
         LocalDate lastActive = stats.getLastActiveDate();

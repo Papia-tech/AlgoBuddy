@@ -18,3 +18,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   port: 8080
+
+app:
+  allowed-origins: ${ALLOWED_ORIGINS:}
+  environment: ${APP_ENV:${spring.profiles.active:dev}}
